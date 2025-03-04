@@ -12,7 +12,7 @@ clearScreen(unsigned int color) {
 }
 
 float render_scale = 1;
-int minx, miny, maxx, maxy;//Значения рабочей области
+int minx, miny, maxx, maxy;// Значения рабочей области
 int lastScreenHeight = render_state.height;
 int lastScreenWidth = render_state.width;
 
@@ -53,8 +53,8 @@ internal void drawRect(int x0, int y0, int width, int height, unsigned int color
 	// Сдвиг для полос с краёв экрана
 	x0 += minx;
 	y0 += miny;
-	width += minx;
-	height += miny;
+	width += x0;
+	height += y0;
 
 	// Устанавливаем в границы окна
 	x0 = clamp(0, x0, render_state.width);
@@ -70,6 +70,11 @@ internal void drawRect(int x0, int y0, int width, int height, unsigned int color
 	}
 }
 internal void drawLine(int x0, int y0, int x1, int y1, unsigned int color) {
+	x0 += minx;
+	x1 += minx;
+	y0 += miny;
+	y1 += miny;
+
 	int dx = x1 - x0;
 	int dy = y1 - y0;
 	int abs_dx = std::abs(dx);

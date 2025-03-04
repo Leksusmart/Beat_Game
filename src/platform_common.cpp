@@ -13,6 +13,10 @@ enum {
 	BUTTON_S,
 	BUTTON_A,
 	BUTTON_D,
+	BUTTON_1,
+	BUTTON_2,
+	BUTTON_3,
+	BUTTON_4,
 
 	BUTTON_COUNT, // Should be the last item
 };
