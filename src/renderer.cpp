@@ -2,7 +2,7 @@
 #include <algorithm>
 
 internal void
-clearScreen(unsigned int color) {
+fillScreen(unsigned int color) {
 	unsigned int* pixel = (unsigned int*)render_state.memory;
 	for (int y = 0; y < render_state.height; y++) {
 		for (int x = 0; x < render_state.width; x++) {
@@ -19,6 +19,10 @@ int lastScreenWidth = render_state.width;
 internal void initScreenVariables() {
 	if (render_state.height == lastScreenHeight
 		&& render_state.width == lastScreenWidth)return;
+	else {
+		lastScreenHeight = render_state.height;
+		lastScreenWidth = render_state.width;
+	}
 	// Вычисляем координаты рабочей области
 	if (static_cast<float>(render_state.width) / render_state.height < 16.f / 9) {// Широта наименьшая
 		render_scale = static_cast<float>(render_state.width) / 1920;
@@ -34,7 +38,7 @@ internal void initScreenVariables() {
 	minx = (render_state.width - maxx) / 2;
 	miny = (render_state.height - maxy) / 2;
 	maxx += minx;
-	maxy += minx;
+	maxy += miny;
 
 	// Устанавливаем в границы окна
 	minx = clamp(0, minx, render_state.width);
@@ -57,10 +61,10 @@ internal void drawRect(int x0, int y0, int width, int height, unsigned int color
 	height += y0;
 
 	// Устанавливаем в границы окна
-	x0 = clamp(0, x0, render_state.width);
-	y0 = clamp(0, y0, render_state.height);
-	width = clamp(0, width, render_state.width);
-	height = clamp(0, height, render_state.height);
+	x0 = clamp(0, x0, maxx);
+	y0 = clamp(0, y0, maxy);
+	width = clamp(0, width, maxx);
+	height = clamp(0, height, maxy);
 	// Отрисовываем
 	for (int y = y0; y < height; y++) {
 		unsigned int* pixel = (unsigned int*)render_state.memory + static_cast<int>(x0) + y * render_state.width;
@@ -85,7 +89,7 @@ internal void drawLine(int x0, int y0, int x1, int y1, unsigned int color) {
 
 	while (true) {
 		// Проверка на выход за границы
-		if (x0 >= 0 && x0 < render_state.width && y0 >= 0 && y0 < render_state.height) {
+		if (x0 >= 0 && x0 < maxx && y0 >= 0 && y0 < maxy) {
 			unsigned int* pixel = (unsigned int*)render_state.memory + x0 + y0 * render_state.width;
 			*pixel = color; // Заливаем пиксель цветом
 		}
@@ -125,14 +129,14 @@ internal void drawCustomRect(int x0, int y0, int x1, int y1, int x2, int y2, int
 	y3 += miny;
 
 	// Устанавливаем в границы окна
-	x0 = clamp(0, x0, render_state.width);
-	x1 = clamp(0, x1, render_state.width);
-	x2 = clamp(0, x2, render_state.width);
-	x3 = clamp(0, x3, render_state.width);
-	y0 = clamp(0, y0, render_state.height);
-	y1 = clamp(0, y1, render_state.height);
-	y2 = clamp(0, y2, render_state.height);
-	y3 = clamp(0, y3, render_state.height);
+	x0 = clamp(0, x0, maxx);
+	x1 = clamp(0, x1, maxx);
+	x2 = clamp(0, x2, maxx);
+	x3 = clamp(0, x3, maxx);
+	y0 = clamp(0, y0, maxy);
+	y1 = clamp(0, y1, maxy);
+	y2 = clamp(0, y2, maxy);
+	y3 = clamp(0, y3, maxy);
 
 	// Находим минимальные и максимальные координаты Y
 	int minY = y0;
@@ -184,7 +188,7 @@ internal void drawCustomRect(int x0, int y0, int x1, int y1, int x2, int y2, int
 				int x1 = intersections[i + 1];
 				for (int x = x0; x <= x1; x++) {
 					// Проверка на выход за границы
-					if (x >= 0 && x < render_state.width && y >= 0 && y < render_state.height) {
+					if (x >= 0 && x < maxx && y >= 0 && y < maxy) {
 						unsigned int* pixel = (unsigned int*)render_state.memory + x + y * render_state.width;
 						*pixel = color;
 					}
@@ -206,8 +210,8 @@ internal void drawEllipse(int centerX, int centerY, int radiusX, int radiusY, un
 	centerY += miny;
 
 	// Устанавливаем в границы окна
-	centerX = clamp(0, centerX, render_state.width);
-	centerY = clamp(0, centerY, render_state.height);
+	centerX = clamp(0, centerX, maxx);
+	centerY = clamp(0, centerY, maxy);
 
 	// Оптимизация: предварительный расчет квадратов радиусов
 	const float radiusXSquared = static_cast<float>(radiusX * radiusX);
@@ -221,7 +225,7 @@ internal void drawEllipse(int centerX, int centerY, int radiusX, int radiusY, un
 				int drawY = centerY + y;
 
 				// Отрисовка
-				if (drawX >= 0 && drawX < render_state.width && drawY >= 0 && drawY < render_state.height) {
+				if (drawX >= 0 && drawX < maxx && drawY >= 0 && drawY < maxy) {
 					unsigned int* pixel = (unsigned int*)render_state.memory + drawX + drawY * render_state.width;
 					*pixel = color;
 				}
